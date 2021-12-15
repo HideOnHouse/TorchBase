@@ -4,7 +4,7 @@ import torch
 from tqdm import tqdm
 
 
-def test(model, device, test_loader, criterion):
+def test(model, device, criterion, test_loader):
     model.eval()
     with torch.no_grad():
         for data, target in tqdm(test_loader, file=sys.stdout):

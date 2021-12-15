@@ -4,7 +4,7 @@ import torch
 from tqdm import tqdm
 
 
-def train(model, device, train_loader, valid_loader, optimizer, criterion, epoch) -> dict:
+def train(model, device, optimizer, criterion, epoch, train_loader, valid_loader=None) -> dict:
     """
     returns history dictionary that contains train_loss, valid_loss as list
     """
@@ -30,15 +30,16 @@ def train(model, device, train_loader, valid_loader, optimizer, criterion, epoch
         train_loss = train_loss / len(train_loader)
         history['train_loss'].append(train_loss)
 
-        model.eval()
-        valid_loss = 0
-        with torch.no_grad():
-            for data, target in valid_loader:
-                data, target = data.to(device), target.to(device),
-                output = model(data)
-                loss = criterion(output, target)
-                valid_loss += loss.item()
-        history['valid_loss'].append(valid_loss)
+        if valid_loader is not None:
+            model.eval()
+            valid_loss = 0
+            with torch.no_grad():
+                for data, target in valid_loader:
+                    data, target = data.to(device), target.to(device),
+                    output = model(data)
+                    loss = criterion(output, target)
+                    valid_loss += loss.item()
+            history['valid_loss'].append(valid_loss)
     return history
 
 
@@ -48,3 +49,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
