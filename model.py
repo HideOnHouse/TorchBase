@@ -1,10 +1,5 @@
-import os
-from typing import Optional, Union, List
-
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
-from tqdm.auto import tqdm
 
 
 class CustomModel(nn.Module):
@@ -12,9 +7,6 @@ class CustomModel(nn.Module):
         super(CustomModel, self).__init__()
 
     def forward(self, x):
-        raise NotImplementedError
-
-    def fit(self, dataloader, device, epoch, save_path, save_epoch, verbose: Optional[str] = None):
         raise NotImplementedError
 
     def step(self, batch):
@@ -66,41 +58,6 @@ class AutoEncoder(CustomModel):
         out = self.decoder(z)
         out = out.view(-1, 1, 28, 28)
         return out, z
-
-    def fit(self, dataloader: DataLoader, device: Union[int, str], epoch: int, save_path: str,
-            save_epoch: Union[int, List[int]],
-            verbose: Optional[str] = None):
-        if verbose == 'bar':
-            pbar = tqdm(range(1, epoch + 1))
-        else:
-            pbar = range(1, epoch + 1)
-        if device < 0:
-            device = 'cpu'
-        else:
-            device = f"cuda:{device}" if torch.cuda.is_available() else 'cpu'
-        for e in pbar:
-            self.train()
-            self.to(device)
-            epoch_loss = 0
-            for batch_idx, batch in enumerate(dataloader, 1):
-                batch, label = batch
-                batch = batch.to(device)
-                loss = self.step(batch)
-                epoch_loss += loss
-                if verbose == 'bar':
-                    pbar.set_postfix_str(f"epoch {e} of {epoch}, loss: {epoch_loss / batch_idx:.5f}")
-                if verbose == 'str' and ((batch_idx == len(dataloader)) or (batch_idx % (len(dataloader) // 10) == 0)):
-                    print(f"epoch {e} of {epoch}, loss: {epoch_loss / batch_idx:.5f}")
-            pbar.update()
-            if isinstance(save_epoch, int):
-                if e % save_epoch == 0:
-                    torch.save(self.state_dict(), os.path.join(save_path, f"epoch={e}{os.extsep}pth"))
-            elif isinstance(save_epoch, List):
-                if e in save_epoch:
-                    torch.save(self.state_dict(), os.path.join(save_path, f"epoch={e}{os.extsep}pth"))
-            else:
-                raise NotImplementedError(f"Not Implemented for type {epoch.__class__}")
-        torch.save(self.state_dict(), os.path.join(save_path, f"epoch={epoch}{os.extsep}pth"))
 
     def step(self, batch: torch.Tensor) -> float:
         output, _ = self(batch)
