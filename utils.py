@@ -46,9 +46,7 @@ class Trainer:
             model.to(device)
             epoch_loss = 0
             for batch_idx, batch in enumerate(dataloader, 1):
-                batch, label = batch
-                batch = batch.to(device)
-                loss = model.step(batch)
+                loss = model.step(batch, device)
                 epoch_loss += loss
                 if verbose == 'bar':
                     pbar.set_postfix_str(f"epoch {e} of {epoch}, loss: {epoch_loss / batch_idx:.5f}")
